@@ -43,4 +43,8 @@
    certain areas (found in the file code/latex/figure.tex).
 
 4. To be able to use the video converter, please refer to the scripts/ folder first to install dependencies
+
+5. To be able to use the GUI version of the program do the following
+   chmod u+x monitor.py
+   ./monitor.py
    

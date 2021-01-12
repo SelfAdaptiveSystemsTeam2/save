@@ -10,14 +10,16 @@ import libs.utils as ut
 import ctls.mpc as mpccontroller
 import ctls.random as randomcontroller
 import ctls.bangbang as bangbangcontroller
+import ctls.closed_loop as closedloopcontroller
+import ctls.pid as pidcontroller
 
 def image_to_matrix(path):
-	img = Image.open(str(path))
-	img = ImageOps.grayscale(img)
-	img_data = img.getdata()
-	img_tab = np.array(img_data)
-	w,h = img.size
-	img_mat = np.reshape(img_tab, (h,w))
+	img = Image.open(str(path))				# opens the img
+	img = ImageOps.grayscale(img)			# converts image to a grayscale image
+	img_data = img.getdata()				# taking data of the image
+	img_tab = np.array(img_data)			# includes the rgb values from the image
+	w,h = img.size							# w = 720, h = 1280
+	img_mat = np.reshape(img_tab, (h,w))	# convert the data into a matrix
 	return img_mat
 
 def compute_ssim(path_a, path_b):
@@ -81,8 +83,8 @@ def main(args):
 	folder_frame_in = args[2]
 	folder_frame_out = args[3]
 	folder_results = args[4]
-	setpoint_quality = float(args[5])
-	setpoint_compression = float(args[6])
+	setpoint_quality = float(args[5])			# similarity index
+	setpoint_compression = float(args[6])		# frame size in kb
 	
 	# getting frames and opening result file
 	path, dirs, files = os.walk(folder_frame_in).next()
@@ -96,6 +98,10 @@ def main(args):
 		controller = randomcontroller.RandomController()
 	elif mode == "bangbang":
 		controller = bangbangcontroller.BangbangController()
+	elif mode == "closed_loop":
+		controller = closedloopcontroller.ClosedLoopController()
+	elif mode == "pid":
+		controller = pidcontroller.PidController()
 	
 	# initial values for actuators
 	ctl = np.matrix([[100], [0], [0]])
@@ -129,6 +135,12 @@ def main(args):
 			ctl = controller.compute_u()
 			
 		elif mode == "bangbang":
+			ctl = controller.compute_u(current_outputs, setpoints)
+		
+		elif mode == "closed_loop":
+			ctl = controller.compute_u(current_outputs, setpoints)
+
+		elif mode == "pid":
 			ctl = controller.compute_u(current_outputs, setpoints)
 			
 	print " done"
